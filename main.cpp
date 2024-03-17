@@ -149,47 +149,16 @@ vector<Move> Board::get_legal_moves(){
     std::vector<Piece*>* friends = (this->fen_activeColor == "w") ? &pieces_white : &pieces_black;
     std::vector<Piece*>* opponents = (this->fen_activeColor == "w") ? &pieces_black : &pieces_white;
 
-    
-    auto checking_pieces = king->get_checking_pieces(*opponents, &this->bitboards);
+    // finds check and sets check_attack_filter in Piece class
+    king->find_checks(*friends, *opponents, &this->bitboards);
 
+    // finds pins and sets pin_attack_filter in Piece class
     king->find_pins(*friends, *opponents, &this->bitboards);
 
-    // double check
-    if (checking_pieces.size() == 2)
-    {
-        king->get_uci(&this->bitboards, moves);
+    for (const auto& p: *friends){
+        p->get_uci(&this->bitboards, moves);
     }
-    // single check
-    else if (checking_pieces.size() == 1){
-        vector<Move> pseudolegal_moves = vector<Move>();
-        auto possible_squares_bb = getBitboardRay(checking_pieces[0]->index, king->index) & ~king->bitboard;
-        auto possible_squares_idxs = bitboard2index(possible_squares_bb);
-        for (const auto& p: *friends){
-            p->get_uci(&this->bitboards, pseudolegal_moves);
-        }
-        
-        for (auto &m: pseudolegal_moves){
-            if (m.from == king->index){
-                moves.push_back(m);
-                continue;
-            }
-            
-            // check if m.to in possible_squares_idx
-            auto it = std::find(possible_squares_idxs.begin(), possible_squares_idxs.end(), m.to);
-            
-
-            if (it != possible_squares_idxs.end()) {
-                moves.push_back(m);
-            }
-        }
-        auto s=1;
-    }
-    // no check
-    else{
-        for (const auto& p: *friends){
-            p->get_uci(&this->bitboards, moves);
-        }
-    }
+    print_bitboard(king->check_attack_filter);
     
     return moves;
 }
@@ -343,7 +312,10 @@ int main(int argc, const char * argv[]) {
     auto fen2 = "4k3/8/8/7q/8/8/4B3/3K4 w - - 0 1";
     auto fen3 = "4k3/8/8/7q/8/5Q2/4B3/3K4 w - - 0 1";
     auto fen4 = "4k3/8/8/3r4/b7/8/2N5/3K4 w - - 0 1";
-    auto b = Board(fen4);
+
+    // double check
+    auto fen5 = "4k3/8/8/8/b2r4/8/8/Q2K4 w - - 0 1";
+    auto b = Board(fen5);
 
 //    b.push_move(Move("E2E4"));
 //    b.show();

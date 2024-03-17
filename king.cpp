@@ -40,14 +40,16 @@ uint64_t generatePseudoLegalKingMovesFromSquare(int square, uint64_t occupancy){
 King::King(bool color, int square_index) : Piece(color ? 'K':'k', square_index){};
 
 
-vector<Piece*> King::get_checking_pieces(vector<Piece*> pieces, Bitboards* bb){
-    vector<Piece*> output = vector<Piece*>();
-    for (const auto& p: pieces){
+void King::find_checks(vector<Piece*> friends, vector<Piece*> opponents, Bitboards* bb){
+    uint64_t tmp;
+    for (const auto& p: opponents){
         if (p->get_attack_bitboard(bb->occupancy) & this->bitboard){
-            output.push_back(p);
+            tmp &= BITBOARD_RAY_MAP.at(make_pair(this->index,p->index));
         }
     }
-    return output;
+    for (auto& k: friends){
+        k->check_attack_filter = tmp;
+    }
 }
 
 void King::get_uci(Bitboards* bb, vector<Move>& moves){

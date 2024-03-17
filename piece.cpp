@@ -69,7 +69,7 @@ vector<int> bitboard2index(uint64_t value) {
 void Piece::get_uci(Bitboards* bb, vector<Move>& moves){
     uint64_t friends_occupancy_bitboard = this->color ? bb->occupancy_white:bb->occupancy_black;
     
-    uint64_t move_bitboard = this->get_attack_bitboard(bb->occupancy) & ~friends_occupancy_bitboard & this->pin_attack_filter;
+    uint64_t move_bitboard = this->get_attack_bitboard(bb->occupancy) & ~friends_occupancy_bitboard & this->pin_attack_filter & this->check_attack_filter;
     
     for (const auto& k: bitboard2index(move_bitboard)){
         moves.push_back(Move(this->index, k));
