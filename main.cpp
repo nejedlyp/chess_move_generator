@@ -19,9 +19,14 @@
 #include "move.hpp"
 #include <algorithm>
 #include <map>
-
+#include "json.hpp"
 using namespace std;
 
+void to_upper(std::string &s) {
+    for (char &c : s) {
+        c = std::toupper(static_cast<unsigned char>(c)); // Use static_cast to ensure the correct overload
+    }
+}
 
 
 class Board{
@@ -73,7 +78,148 @@ private:
     void parseFEN(const string& fen);
     void extractPieces(const string& fen);
 
+    void verify_castling_K(vector<Move>& moves);
+    void verify_castling_Q(vector<Move>& moves);
+    void verify_castling_k(vector<Move>& moves);
+    void verify_castling_q(vector<Move>& moves);
+    void verify_enpassant(vector<Move>& moves);
+
 };
+
+void Board::verify_enpassant(vector<Move> &moves) {
+    // TODO: verify that king is not in check after the enpassant move
+    if (this->fen_enPassantTarget == "-") {
+        return;
+    }
+    to_upper(this->fen_enPassantTarget);
+    int square = SquareToIndex.at(this->fen_enPassantTarget);
+
+    if (this->fen_activeColor == "w") {
+        uint64_t possible_squares = generatePseudolegalBlackPawnCapturesFromSquare(square);
+        auto tmp = bitboard2index(possible_squares);
+        for (auto& k: tmp){
+            if (square_piece_map[k] != nullptr && square_piece_map[k]->type == 'P'){
+                moves.push_back(Move(k, square));
+            }
+        }
+
+    } else {
+        uint64_t possible_squares = generatePseudolegalWhitePawnCapturesFromSquare(square);
+        auto tmp = bitboard2index(possible_squares);
+        for (auto& k: tmp){
+            if (square_piece_map[k] != nullptr && square_piece_map[k]->type == 'p'){
+                moves.push_back(Move(k, square));
+            }
+        }
+    }
+}
+
+void Board::verify_castling_K(vector<Move> &moves) {
+    if (!this->castling_K){
+        return;
+    }
+    if (this->fen_activeColor != "w") {
+        return;
+    }
+    if (square_piece_map[SquareToIndex.at("F1")] != nullptr) {
+        return;
+    }
+    if (square_piece_map[SquareToIndex.at("G1")] != nullptr) {
+        return;
+    }
+    if (this->bitboards.attack_black_no_wk & (1ULL << SquareToIndex.at("E1"))){
+        return;
+    }
+    if (this->bitboards.attack_black_no_wk & (1ULL << SquareToIndex.at("F1"))){
+        return;
+    }
+    if (this->bitboards.attack_black_no_wk & (1ULL << SquareToIndex.at("G1"))){
+        return;
+    }
+    moves.push_back(Move("E1G1"));
+}
+
+void Board::verify_castling_Q(vector<Move> &moves) {
+    if (!this->castling_Q){
+        return;
+    }
+    if (this->fen_activeColor != "w") {
+        return;
+    }
+    if (square_piece_map[SquareToIndex.at("D1")] != nullptr) {
+        return;
+    }
+    if (square_piece_map[SquareToIndex.at("C1")] != nullptr) {
+        return;
+    }
+    if (square_piece_map[SquareToIndex.at("B1")] != nullptr) {
+        return;
+    }
+    if (this->bitboards.attack_black_no_wk & (1ULL << SquareToIndex.at("E1"))){
+        return;
+    }
+    if (this->bitboards.attack_black_no_wk & (1ULL << SquareToIndex.at("D1"))){
+        return;
+    }
+    if (this->bitboards.attack_black_no_wk & (1ULL << SquareToIndex.at("C1"))){
+        return;
+    }
+    moves.push_back(Move("E1C1"));
+}
+
+
+void Board::verify_castling_k(vector<Move> &moves) {
+    if (!this->castling_k){
+        return;
+    }
+    if (this->fen_activeColor != "b") {
+        return;
+    }
+    if (square_piece_map[SquareToIndex.at("F8")] != nullptr) {
+        return;
+    }
+    if (square_piece_map[SquareToIndex.at("G8")] != nullptr) {
+        return;
+    }
+    if (this->bitboards.attack_white_no_bk & (1ULL << SquareToIndex.at("E8"))){
+        return;
+    }
+    if (this->bitboards.attack_white_no_bk & (1ULL << SquareToIndex.at("F8"))){
+        return;
+    }
+    if (this->bitboards.attack_white_no_bk & (1ULL << SquareToIndex.at("G8"))){
+        return;
+    }
+    moves.push_back(Move("E8G8"));
+}
+
+void Board::verify_castling_q(vector<Move> &moves) {
+    if (!this->castling_q) {
+        return;
+    }
+    if (this->fen_activeColor != "b") {
+        return;
+    }
+    if (square_piece_map[SquareToIndex.at("D8")] != nullptr) {
+        return;
+    }
+    if (square_piece_map[SquareToIndex.at("C8")] != nullptr) {
+        return;
+    }
+    if (square_piece_map[SquareToIndex.at("B8")] != nullptr) {
+        return;
+    }
+    if (this->bitboards.attack_white_no_bk & (1ULL << SquareToIndex.at("E8"))) {
+        return;
+    }
+    if (this->bitboards.attack_white_no_bk & (1ULL << SquareToIndex.at("D8"))) {
+        return;
+    }
+    if (this->bitboards.attack_white_no_bk & (1ULL << SquareToIndex.at("C8"))) {
+        return;
+    }
+    moves.push_back(Move("E8C8"));
+}
 
 Board Board::deep_copy() const{
     string fen = this->get_fen();
@@ -158,8 +304,15 @@ vector<Move> Board::get_legal_moves(){
     for (const auto& p: *friends){
         p->get_uci(&this->bitboards, moves);
     }
-    print_bitboard(king->check_attack_filter);
-    
+
+    verify_castling_K(moves);
+    verify_castling_Q(moves);
+    verify_castling_k(moves);
+    verify_castling_q(moves);
+
+    verify_enpassant(moves);
+
+
     return moves;
 }
 
@@ -299,16 +452,20 @@ void test_fen(string fen, vector<string> correct){
 
 
 int main(int argc, const char * argv[]) {
-    //print_bitboard(BITBOARD_RAY_MAP.at(std::make_pair(SquareToIndex.at("A8"), SquareToIndex.at("B1"))));
-    
-    //test_fen("3Bk3/8/8/8/1Q5q/5N2/6P1/4K2R w - - 0 1",vector<string>({"B4H4","D8H4","E1D1","E1D2","E1E2","E1F1","F3H4","G2G3","H1H4"}));
-    //test_fen("r1bqk2r/ppp1ppbp/2n2np1/3p4/3P4/2NBPN2/PPPB1PPP/R2QK2R w - - 0 1",vector<string>({"A1B1","A1C1","A2A3","A2A4","B2B3","B2B4","C3A4","C3B1","C3B5","C3D5","C3E2","C3E4","D1B1","D1C1","D1E2","D2C1","D3A6","D3B5","D3C4","D3E2","D3E4","D3F1","D3F5","D3G6","E1E2","E1F1","E3E4","F3E5","F3G1","F3G5","F3H4","G2G3","G2G4","H1F1","H1G1","H2H3","H2H4"}));
 
-    //test_fen("4k3/4r3/8/8/7b/8/8/4K3 w - - 0 1",vector<string>({"E1F1","E1D1","E1D2"}));
+    auto out = parseSimpleJson("/Users/petr/CLionProjects/engine/test.json");
+
+    for (auto const& [fen, moves] : out){
+        test_fen(fen, moves);
+    }
+
+    test_fen("3Bk3/8/8/8/1Q5q/5N2/6P1/4K2R w - - 0 1",vector<string>({"B4H4","D8H4","E1D1","E1D2","E1E2","E1F1","F3H4","G2G3","H1H4"}));
+    test_fen("r1bqk2r/ppp1ppbp/2n2np1/3p4/3P4/2NBPN2/PPPB1PPP/R2QK2R w - - 0 1",vector<string>({"A1B1","A1C1","A2A3","A2A4","B2B3","B2B4","C3A4","C3B1","C3B5","C3D5","C3E2","C3E4","D1B1","D1C1","D1E2","D2C1","D3A6","D3B5","D3C4","D3E2","D3E4","D3F1","D3F5","D3G6","E1E2","E1F1","E3E4","F3E5","F3G1","F3G5","F3H4","G2G3","G2G4","H1F1","H1G1","H2H3","H2H4"}));
+
+    test_fen("4k3/4r3/8/8/7b/8/8/4K3 w - - 0 1",vector<string>({"E1F1","E1D1","E1D2"}));
     
     auto start = std::chrono::high_resolution_clock::now();
     auto fen_start = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    auto fen = "r1bqk2r/ppp1ppbp/2n2np1/3p4/3P4/2NBPN2/PPPB1PPP/R2QK2R w - - 0 1";
     auto fen2 = "4k3/8/8/7q/8/8/4B3/3K4 w - - 0 1";
     auto fen3 = "4k3/8/8/7q/8/5Q2/4B3/3K4 w - - 0 1";
     auto fen4 = "4k3/8/8/3r4/b7/8/2N5/3K4 w - - 0 1";
@@ -324,7 +481,15 @@ int main(int argc, const char * argv[]) {
 
     //check - pawn capture
     auto fen8 = "3k4/8/8/8/8/4r3/3P4/4K3 w - - 0 1";
-    auto b = Board(fen8);
+
+    //castling white
+    auto fen9 = "3k4/8/8/8/8/8/8/R3K2R w KQ - 0 1";
+
+    // enpassant
+    auto fen10 = "3k4/8/8/3PpP2/8/8/8/4K3 w - e6 0 1";
+    auto b = Board(fen10);
+
+
 
 //    b.push_move(Move("E2E4"));
 //    b.show();

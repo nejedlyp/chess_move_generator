@@ -23,4 +23,5 @@ add_executable(engine main.cpp
         square_map.h
         pawn.cpp
         pawn.hpp
+        json.hpp
 )
