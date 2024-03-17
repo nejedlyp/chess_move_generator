@@ -26,12 +26,18 @@ using namespace std;
 
 class Board{
 public:
-    string fen;
-    string fen_boardPosition;
-    string fen_activeColor;
-    string fen_castlingAvailability;
-    string fen_enPassantTarget;
+    Board(const string& fen);
 
+    vector<Move> get_legal_moves();
+    vector<string> get_legal_moves_uci();
+
+    string get_fen();
+
+    void show();
+    void push_move(Move m);
+    void push_move_uci(const string& uci);
+
+private:
     bool active_color;
     bool castling_K;
     bool castling_k;
@@ -42,24 +48,88 @@ public:
     int fullMoveNumber;
     
     Bitboards bitboards;
-    
-    Board(const string& fen);
-    
+
     vector<Piece*> pieces;
     vector<Piece*> pieces_white;
     vector<Piece*> pieces_black;
     
     King* wk = nullptr;
     King* bk = nullptr;
-    
-    vector<Move> get_legal_moves();
-    vector<string> get_legal_moves_uci();
 
-    
+    map<int,Piece*> square_piece_map;
+
+
+    string fen;
+    string fen_boardPosition;
+    string fen_activeColor;
+    string fen_castlingAvailability;
+    string fen_enPassantTarget;
     void parseFEN(const string& fen);
     void extractPieces(const string& fen);
 
 };
+
+void Board::push_move(Move m){
+    Piece* p = square_piece_map[m.from];
+    square_piece_map[m.to] = p;
+    square_piece_map[m.from] = nullptr;
+    p->index = m.to;
+}
+
+
+// loop over square_piece_map and output fen string
+string Board::get_fen(){
+    string fen = "";
+    int empty = 0;
+    for (int i = 63; i >= 0; --i) {
+
+        if (square_piece_map[i] == nullptr) {
+            empty++;
+        } else {
+            fen += (empty == 0) ? "" : to_string(empty);
+            fen += square_piece_map[i]->type;
+            empty = 0;
+        }
+        if (i % 8 == 0 && i != 0) {
+            fen += (empty == 0) ? "" : to_string(empty);
+            fen += "/";
+            empty = 0;
+        }
+
+    }
+    fen += " ";
+    fen += this->fen_activeColor;
+    fen += " ";
+    fen += this->fen_castlingAvailability;
+    fen += " ";
+    fen += this->fen_enPassantTarget;
+    fen += " ";
+    fen += to_string(this->halfMoveClock);
+    fen += " ";
+    fen += to_string(this->fullMoveNumber);
+    return fen;
+}
+
+void Board::show() {
+    cout<<"FEN: "<<this->get_fen()<<endl;
+    cout<< "+-----+-----+-----+-----+-----+-----+-----+-----+"<<endl;
+    for (int i = 63; i >= 0; --i) {
+
+        if (square_piece_map[i] == nullptr) {
+            cout << "|     ";
+        } else {
+            cout << "|  "<<square_piece_map[i]->type<<"  ";
+        }
+        if (i % 8 == 0) {
+            cout <<"|  "<< (i/8)+1  <<endl;
+            cout<< "+-----+-----+-----+-----+-----+-----+-----+-----+"<<endl;
+        }
+    }
+    cout<<"   A     B     C     D     E     F     G     H"<<endl;
+    cout << endl;
+
+}
+
 
 vector<Move> Board::get_legal_moves(){
     vector<Move> moves = vector<Move>();
@@ -133,6 +203,13 @@ void Board::parseFEN(const string& fen){
     fenStream >> this->fen_enPassantTarget;
     fenStream >> this->halfMoveClock;
     fenStream >> this->fullMoveNumber;
+
+    this->active_color = this->fen_activeColor == "w";
+    this->castling_K = this->fen_castlingAvailability.find("K") != string::npos;
+    this->castling_k = this->fen_castlingAvailability.find("k") != string::npos;
+    this->castling_Q = this->fen_castlingAvailability.find("Q") != string::npos;
+    this->castling_q = this->fen_castlingAvailability.find("q") != string::npos;
+    this->enPassant_square = this->fen_enPassantTarget;
 }
 
 
@@ -172,6 +249,7 @@ void Board::extractPieces(const string& fen){
     
     
     for (const auto& p: pieces){
+        square_piece_map[p->index] = p;
         if (p->color){
             pieces_white.push_back(p);
         }
@@ -190,11 +268,15 @@ void Board::extractPieces(const string& fen){
 }
 
 Board::Board(const string& fen){
+    for (int i = 0; i < 64; ++i) {
+        square_piece_map[i] = nullptr;
+    }
+
+
     this->parseFEN(fen);
     this->extractPieces(this->fen_boardPosition);
     this->bitboards = Bitboards(this->pieces);
-    int s= 1;
-    
+
 };
 
 
@@ -248,18 +330,20 @@ static const std::map<std::pair<int, int>, uint64_t> BITBOARD_RAY_MAP = generate
 
 
 int main(int argc, const char * argv[]) {
-    print_bitboard(BITBOARD_RAY_MAP.at(std::make_pair(SquareToIndex.at("A8"), SquareToIndex.at("B1"))));
+    //print_bitboard(BITBOARD_RAY_MAP.at(std::make_pair(SquareToIndex.at("A8"), SquareToIndex.at("B1"))));
     
-    test_fen("3Bk3/8/8/8/1Q5q/5N2/6P1/4K2R w - - 0 1",vector<string>({"B4H4","D8H4","E1D1","E1D2","E1E2","E1F1","F3H4","G2G3","H1H4"}));
-    test_fen("r1bqk2r/ppp1ppbp/2n2np1/3p4/3P4/2NBPN2/PPPB1PPP/R2QK2R w - - 0 1",vector<string>({"A1B1","A1C1","A2A3","A2A4","B2B3","B2B4","C3A4","C3B1","C3B5","C3D5","C3E2","C3E4","D1B1","D1C1","D1E2","D2C1","D3A6","D3B5","D3C4","D3E2","D3E4","D3F1","D3F5","D3G6","E1E2","E1F1","E3E4","F3E5","F3G1","F3G5","F3H4","G2G3","G2G4","H1F1","H1G1","H2H3","H2H4"}));
+    //test_fen("3Bk3/8/8/8/1Q5q/5N2/6P1/4K2R w - - 0 1",vector<string>({"B4H4","D8H4","E1D1","E1D2","E1E2","E1F1","F3H4","G2G3","H1H4"}));
+    //test_fen("r1bqk2r/ppp1ppbp/2n2np1/3p4/3P4/2NBPN2/PPPB1PPP/R2QK2R w - - 0 1",vector<string>({"A1B1","A1C1","A2A3","A2A4","B2B3","B2B4","C3A4","C3B1","C3B5","C3D5","C3E2","C3E4","D1B1","D1C1","D1E2","D2C1","D3A6","D3B5","D3C4","D3E2","D3E4","D3F1","D3F5","D3G6","E1E2","E1F1","E3E4","F3E5","F3G1","F3G5","F3H4","G2G3","G2G4","H1F1","H1G1","H2H3","H2H4"}));
 
-    test_fen("4k3/4r3/8/8/7b/8/8/4K3 w - - 0 1",vector<string>({"E1F1","E1D1","E1D2"}));
+    //test_fen("4k3/4r3/8/8/7b/8/8/4K3 w - - 0 1",vector<string>({"E1F1","E1D1","E1D2"}));
     
     auto start = std::chrono::high_resolution_clock::now();
     auto fen_start = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     auto fen = "r1bqk2r/ppp1ppbp/2n2np1/3p4/3P4/2NBPN2/PPPB1PPP/R2QK2R w - - 0 1";
-    
-    auto b = Board(fen);
+    auto b = Board(fen_start);
+    b.push_move(Move("E2E4"));
+    b.show();
+    auto fen1 = b.get_fen();
     auto moves = b.get_legal_moves();
     for (auto &m: moves){
         cout<<m<<endl;

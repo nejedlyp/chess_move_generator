@@ -18,7 +18,7 @@ public:
     int from;
     int to;
     Move(int from, int to);
-    
+    Move(string uci);
     string uci() const;
     
     friend std::ostream& operator<<(std::ostream& os, const Move& obj) {

@@ -12,6 +12,11 @@ Move::Move(int from, int to){
     this->to = to;
 }
 
+Move::Move(std::string uci) {
+    this->from = SquareToIndex.at(uci.substr(0,2));
+    this->to = SquareToIndex.at(uci.substr(2,2));
+}
+
 string Move::uci() const {
     return IndexToSquare.at(this->from)+IndexToSquare.at(this->to);
 }
