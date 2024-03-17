@@ -41,7 +41,7 @@ King::King(bool color, int square_index) : Piece(color ? 'K':'k', square_index){
 
 
 void King::find_checks(vector<Piece*> friends, vector<Piece*> opponents, Bitboards* bb){
-    uint64_t tmp;
+    uint64_t tmp = 0xFFFFFFFFFFFFFFFF;
     for (const auto& p: opponents){
         if (p->get_attack_bitboard(bb->occupancy) & this->bitboard){
             tmp &= BITBOARD_RAY_MAP.at(make_pair(this->index,p->index));

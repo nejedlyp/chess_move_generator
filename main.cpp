@@ -315,7 +315,16 @@ int main(int argc, const char * argv[]) {
 
     // double check
     auto fen5 = "4k3/8/8/8/b2r4/8/8/Q2K4 w - - 0 1";
-    auto b = Board(fen5);
+
+    // check
+    auto fen6 = "3k4/8/8/8/b2r4/7R/2N5/3K2Q1 w - - 0 1";
+
+    // pin-check
+    auto fen7 = "3k4/8/8/8/8/2b1r3/3P4/4K3 w - - 0 1";
+
+    //check - pawn capture
+    auto fen8 = "3k4/8/8/8/8/4r3/3P4/4K3 w - - 0 1";
+    auto b = Board(fen8);
 
 //    b.push_move(Move("E2E4"));
 //    b.show();
