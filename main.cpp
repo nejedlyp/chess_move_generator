@@ -151,7 +151,9 @@ vector<Move> Board::get_legal_moves(){
 
     
     auto checking_pieces = king->get_checking_pieces(*opponents, &this->bitboards);
-    auto pinned_pieces_moves = king->get_pinned_moves(*opponents, &this->bitboards);
+
+    king->find_pins(*friends, *opponents, &this->bitboards);
+
     // double check
     if (checking_pieces.size() == 2)
     {
@@ -340,7 +342,7 @@ int main(int argc, const char * argv[]) {
     auto fen = "r1bqk2r/ppp1ppbp/2n2np1/3p4/3P4/2NBPN2/PPPB1PPP/R2QK2R w - - 0 1";
     auto fen2 = "4k3/8/8/7q/8/8/4B3/3K4 w - - 0 1";
     auto fen3 = "4k3/8/8/7q/8/5Q2/4B3/3K4 w - - 0 1";
-    auto fen4 = "4k3/8/8/8/b2r4/8/2N5/3K4 w - - 0 1";
+    auto fen4 = "4k3/8/8/3r4/b7/8/2N5/3K4 w - - 0 1";
     auto b = Board(fen4);
 
 //    b.push_move(Move("E2E4"));

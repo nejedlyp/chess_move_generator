@@ -67,11 +67,11 @@ uint64_t King::get_attack_bitboard(uint64_t occupancy){
     return generatePseudoLegalKingMovesFromSquare(this->index, occupancy);
 }
 
-vector<Move> King::get_pinned_moves(vector<Piece*> pieces, Bitboards* bb){
+void King::find_pins(vector<Piece*> friends, vector<Piece*> opponents, Bitboards* bb){
     uint64_t friends_occupancy_bitboard = this->color ? bb->occupancy_white:bb->occupancy_black;
 
     vector<Move> output = vector<Move>();
-    for (const auto& p: pieces){
+    for (const auto& p: opponents){
         if (!p->slider){
             continue;
         }
@@ -86,13 +86,15 @@ vector<Move> King::get_pinned_moves(vector<Piece*> pieces, Bitboards* bb){
             continue;
         }
 
-        int from_square = bitboard2index(tmp)[0];
+        //int from_square = bitboard2index(tmp)[0];
         print_bitboard(tmp);
         uint64_t to_squares = BITBOARD_RAY_MAP.at(make_pair(this->index,p->index)) & ~this->bitboard & ~tmp;
         print_bitboard(to_squares);
-        for (const auto& k: bitboard2index(to_squares)){
-            output.push_back(Move(from_square, k));
+        for (auto& k: friends){
+            if (tmp == k->bitboard){
+                k->pin_attack_filter = to_squares;
+                auto stop = 1;
+            }
         }
     }
-    return output;
 }

@@ -14,6 +14,7 @@
 #include <cctype>
 #include "vector"
 #include "move.hpp"
+#include "square_map.h"
 using namespace std;
 
 class Bitboards;
@@ -26,9 +27,15 @@ public:
     bool color;
     Piece(char type, int square_idx);
     bool slider;
-    
+
+    // used to filter moves that are outside of the pin-ray
+    uint64_t pin_attack_filter;
+
+    // used to filter moves that are outside of the check-ray
+    uint64_t check_attack_filter;
+
     virtual uint64_t get_attack_bitboard(uint64_t occupancy) = 0;
-    
+    string square;
     virtual void get_uci(Bitboards* bb, vector<Move>& moves);
 
     

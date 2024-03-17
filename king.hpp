@@ -23,7 +23,8 @@ public:
     virtual uint64_t get_attack_bitboard(uint64_t occupancy) override;
     
     vector<Piece*> get_checking_pieces(vector<Piece*> pieces, Bitboards* bb);
-    vector<Move> get_pinned_moves(vector<Piece*> pieces, Bitboards* bb);
+
+    void find_pins(vector<Piece*> friends, vector<Piece*> opponents, Bitboards* bb);
 
     virtual void get_uci(Bitboards* bb, vector<Move>& moves) override;
 };
