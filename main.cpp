@@ -456,57 +456,11 @@ int main(int argc, const char * argv[]) {
     auto out = parseSimpleJson("/Users/petr/CLionProjects/engine/test.json");
 
     for (auto const& [fen, moves] : out){
+        if (moves.size() == 0) {
+            continue;
+        }
         test_fen(fen, moves);
     }
 
-    test_fen("3Bk3/8/8/8/1Q5q/5N2/6P1/4K2R w - - 0 1",vector<string>({"B4H4","D8H4","E1D1","E1D2","E1E2","E1F1","F3H4","G2G3","H1H4"}));
-    test_fen("r1bqk2r/ppp1ppbp/2n2np1/3p4/3P4/2NBPN2/PPPB1PPP/R2QK2R w - - 0 1",vector<string>({"A1B1","A1C1","A2A3","A2A4","B2B3","B2B4","C3A4","C3B1","C3B5","C3D5","C3E2","C3E4","D1B1","D1C1","D1E2","D2C1","D3A6","D3B5","D3C4","D3E2","D3E4","D3F1","D3F5","D3G6","E1E2","E1F1","E3E4","F3E5","F3G1","F3G5","F3H4","G2G3","G2G4","H1F1","H1G1","H2H3","H2H4"}));
-
-    test_fen("4k3/4r3/8/8/7b/8/8/4K3 w - - 0 1",vector<string>({"E1F1","E1D1","E1D2"}));
-    
-    auto start = std::chrono::high_resolution_clock::now();
-    auto fen_start = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    auto fen2 = "4k3/8/8/7q/8/8/4B3/3K4 w - - 0 1";
-    auto fen3 = "4k3/8/8/7q/8/5Q2/4B3/3K4 w - - 0 1";
-    auto fen4 = "4k3/8/8/3r4/b7/8/2N5/3K4 w - - 0 1";
-
-    // double check
-    auto fen5 = "4k3/8/8/8/b2r4/8/8/Q2K4 w - - 0 1";
-
-    // check
-    auto fen6 = "3k4/8/8/8/b2r4/7R/2N5/3K2Q1 w - - 0 1";
-
-    // pin-check
-    auto fen7 = "3k4/8/8/8/8/2b1r3/3P4/4K3 w - - 0 1";
-
-    //check - pawn capture
-    auto fen8 = "3k4/8/8/8/8/4r3/3P4/4K3 w - - 0 1";
-
-    //castling white
-    auto fen9 = "3k4/8/8/8/8/8/8/R3K2R w KQ - 0 1";
-
-    // enpassant
-    auto fen10 = "3k4/8/8/3PpP2/8/8/8/4K3 w - e6 0 1";
-    auto b = Board(fen10);
-
-
-
-//    b.push_move(Move("E2E4"));
-//    b.show();
-
-
-    auto fen1 = b.get_fen();
-    auto moves = b.get_legal_moves();
-    for (auto &m: moves){
-        cout<<m<<endl;
-    }
-
-    // Get the ending point
-    auto end = std::chrono::high_resolution_clock::now();
-    
-    // Calculate the duration
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    
-    std::cout << "Execution time: " << duration.count() << " microseconds" << std::endl;
     
 }
