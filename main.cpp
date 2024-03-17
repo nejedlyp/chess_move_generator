@@ -27,15 +27,21 @@ using namespace std;
 class Board{
 public:
     Board(const string& fen);
+//    ~Board(){
+//        for (auto &p: pieces){
+//            delete p;
+//        }
+//    }
 
     vector<Move> get_legal_moves();
     vector<string> get_legal_moves_uci();
 
-    string get_fen();
+    string get_fen() const;
 
-    void show();
+    void show() const;
     void push_move(Move m);
-    void push_move_uci(const string& uci);
+
+    Board deep_copy() const;
 
 private:
     bool active_color;
@@ -69,6 +75,11 @@ private:
 
 };
 
+Board Board::deep_copy() const{
+    string fen = this->get_fen();
+    return Board(fen);
+}
+
 void Board::push_move(Move m){
     Piece* p = square_piece_map[m.from];
     square_piece_map[m.to] = p;
@@ -78,16 +89,16 @@ void Board::push_move(Move m){
 
 
 // loop over square_piece_map and output fen string
-string Board::get_fen(){
+string Board::get_fen() const{
     string fen = "";
     int empty = 0;
     for (int i = 63; i >= 0; --i) {
 
-        if (square_piece_map[i] == nullptr) {
+        if (square_piece_map.at(i) == nullptr) {
             empty++;
         } else {
             fen += (empty == 0) ? "" : to_string(empty);
-            fen += square_piece_map[i]->type;
+            fen += square_piece_map.at(i)->type;
             empty = 0;
         }
         if (i % 8 == 0 && i != 0) {
@@ -110,15 +121,15 @@ string Board::get_fen(){
     return fen;
 }
 
-void Board::show() {
+void Board::show() const{
     cout<<"FEN: "<<this->get_fen()<<endl;
     cout<< "+-----+-----+-----+-----+-----+-----+-----+-----+"<<endl;
     for (int i = 63; i >= 0; --i) {
 
-        if (square_piece_map[i] == nullptr) {
+        if (square_piece_map.at(i) == nullptr) {
             cout << "|     ";
         } else {
-            cout << "|  "<<square_piece_map[i]->type<<"  ";
+            cout << "|  "<<square_piece_map.at(i)->type<<"  ";
         }
         if (i % 8 == 0) {
             cout <<"|  "<< (i/8)+1  <<endl;
@@ -140,7 +151,7 @@ vector<Move> Board::get_legal_moves(){
 
     
     auto checking_pieces = king->get_checking_pieces(*opponents, &this->bitboards);
-    
+    auto pinned_pieces_moves = king->get_pinned_moves(*opponents, &this->bitboards);
     // double check
     if (checking_pieces.size() == 2)
     {
@@ -186,7 +197,7 @@ vector<Move> Board::get_legal_moves(){
 vector<string> Board::get_legal_moves_uci(){
     vector<string> moves = vector<string>();
     for (const auto& p: this->get_legal_moves()){
-        moves.push_back(p.uci());
+        moves.push_back(p.get_uci());
     }
     return moves;
 }
@@ -312,19 +323,6 @@ void test_fen(string fen, vector<string> correct){
 }
 
 
-// Function to generate the map
-static map<std::pair<int, int>, uint64_t> generateRayMap() {
-    map<std::pair<int, int>, uint64_t> rayMap;
-    for (int sq1 = 0; sq1 < 64; ++sq1) {
-        for (int sq2 = 0; sq2 < 64; ++sq2) {
-            rayMap[std::make_pair(sq1, sq2)] = getBitboardRay(sq1, sq2);
-        }
-    }
-    return rayMap;
-}
-
-// The static const map
-static const std::map<std::pair<int, int>, uint64_t> BITBOARD_RAY_MAP = generateRayMap();
 
 
 
@@ -340,9 +338,15 @@ int main(int argc, const char * argv[]) {
     auto start = std::chrono::high_resolution_clock::now();
     auto fen_start = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     auto fen = "r1bqk2r/ppp1ppbp/2n2np1/3p4/3P4/2NBPN2/PPPB1PPP/R2QK2R w - - 0 1";
-    auto b = Board(fen_start);
-    b.push_move(Move("E2E4"));
-    b.show();
+    auto fen2 = "4k3/8/8/7q/8/8/4B3/3K4 w - - 0 1";
+    auto fen3 = "4k3/8/8/7q/8/5Q2/4B3/3K4 w - - 0 1";
+    auto fen4 = "4k3/8/8/8/b2r4/8/2N5/3K4 w - - 0 1";
+    auto b = Board(fen4);
+
+//    b.push_move(Move("E2E4"));
+//    b.show();
+
+
     auto fen1 = b.get_fen();
     auto moves = b.get_legal_moves();
     for (auto &m: moves){

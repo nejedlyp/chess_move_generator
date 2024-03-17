@@ -66,3 +66,33 @@ void King::get_uci(Bitboards* bb, vector<Move>& moves){
 uint64_t King::get_attack_bitboard(uint64_t occupancy){
     return generatePseudoLegalKingMovesFromSquare(this->index, occupancy);
 }
+
+vector<Move> King::get_pinned_moves(vector<Piece*> pieces, Bitboards* bb){
+    uint64_t friends_occupancy_bitboard = this->color ? bb->occupancy_white:bb->occupancy_black;
+
+    vector<Move> output = vector<Move>();
+    for (const auto& p: pieces){
+        if (!p->slider){
+            continue;
+        }
+        uint64_t tmp = ~p->bitboard &
+                        p->get_attack_bitboard(bb->occupancy) &
+                       ~this->bitboard &
+                        generatePseudoLegalQueenMovesFromSquare(this->index,bb->occupancy) &
+                       BITBOARD_RAY_MAP.at(make_pair(this->index,p->index)) &
+                       friends_occupancy_bitboard;
+
+        if (tmp == 0){
+            continue;
+        }
+
+        int from_square = bitboard2index(tmp)[0];
+        print_bitboard(tmp);
+        uint64_t to_squares = BITBOARD_RAY_MAP.at(make_pair(this->index,p->index)) & ~this->bitboard & ~tmp;
+        print_bitboard(to_squares);
+        for (const auto& k: bitboard2index(to_squares)){
+            output.push_back(Move(from_square, k));
+        }
+    }
+    return output;
+}

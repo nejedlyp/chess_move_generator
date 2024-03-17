@@ -16,6 +16,13 @@ Piece::Piece(char type, int square_idx){
     this->index = square_idx;
     this->bitboard = 1ULL << this->index;
     this->color = isupper(this->type);
+    // check if the piece type is a slider
+    this->slider = (this->type == 'B' ||
+                    this->type == 'R' ||
+                    this->type == 'Q' ||
+                    this->type == 'b' ||
+                    this->type == 'r' ||
+                    this->type == 'q');
     
 }
 

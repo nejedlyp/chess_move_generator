@@ -25,6 +25,7 @@ public:
     uint64_t bitboard;
     bool color;
     Piece(char type, int square_idx);
+    bool slider;
     
     virtual uint64_t get_attack_bitboard(uint64_t occupancy) = 0;
     
