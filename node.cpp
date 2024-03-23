@@ -16,8 +16,10 @@ Node::Node(Node *parent, Board *board,Move *move) {
     this->move = move;
 }
 
-Node* Node::expand(int depth) {
+Node* Node::expand(int depth,ofstream& file) {
     if (depth == 0){
+        //append to file fen position
+        file << this->board->get_fen() << endl;
         return this;
     }
     vector<Move> moves = this->board->get_legal_moves();
@@ -26,7 +28,7 @@ Node* Node::expand(int depth) {
         new_board.push_move(m);
         Node* new_node = new Node(this, &new_board,&m);
         this->children.push_back(new_node);
-        new_node->expand(depth-1);
+        new_node->expand(depth-1, file);
     }
     return this;
 }

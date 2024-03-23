@@ -22,9 +22,25 @@
 #include "board.h"
 #include "node.h"
 #include "json.hpp"
+#include <fstream>
+#include <chrono>
+#include <ostream>
 using namespace std;
 
+void test_get_fen(string fen){
+    cout<<"----------------------------------------"<<endl;
+    cout<<"Test: "<<fen<<endl;
+    auto board = Board(fen);
+    auto fen2 = board.get_fen();
+    cout<<"Out:  "<<fen2<<endl;
+    if (fen != fen2){
+        cout<<"Invalid"<<endl;
+    }
+    else{
+        cout<<"OK"<<endl;
+    }
 
+}
 
 
 void test_fen(string fen, vector<string> correct){
@@ -61,16 +77,19 @@ void test_fen(string fen, vector<string> correct){
     }
 }
 
-void perft(int depth){
+void perft(int depth,const string& fen_positions){
+    ofstream file("fen_positions.txt", ios::trunc);
+
+
     //start time measurement
     chrono::steady_clock::time_point begin = chrono::steady_clock::now();
 
 
     Node* root;
-    root = new Node(nullptr, new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"));
-    root->expand(depth);
+    root = new Node(nullptr, new Board(fen_positions));
+    root->expand(depth,file);
     auto perft_x = root->count_leaf_nodes();
-
+    file.close();
 
     //end time measurement
     chrono::steady_clock::time_point end = chrono::steady_clock::now();
@@ -85,7 +104,14 @@ void perft(int depth){
 
 
 int main(int argc, const char * argv[]) {
-
+    auto b = Board("rnbqkbnr/pppppppp/8/8/8/3P4/PPP1PPPP/RNBQKBNR b KQkq - 0 1");
+    b.show();
+    b.push_move(Move("G7G5"));
+    b.show();
+    auto lg = b.get_legal_moves_uci();
+    for (auto& m: lg){
+        cout<<m<<endl;
+    }
     auto out = parseSimpleJson("/Users/petr/CLionProjects/engine/test.json");
 
     for (auto const& [fen, moves] : out){
@@ -95,11 +121,14 @@ int main(int argc, const char * argv[]) {
         //if (fen != "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8")
         //    continue;
         test_fen(fen, moves);
+        test_get_fen(fen);
     }
-    perft(1);
-    perft(2);
-    perft(3);
-    perft(4);
+    const string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
+    const string fen_start = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    perft(1,fen_start);
+    perft(2,fen_start);
+    perft(3,fen_start);
+    perft(4,fen_start);
 
 
     auto stop = 1;

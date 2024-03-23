@@ -8,8 +8,9 @@
 #include <stdio.h>
 #include <vector>
 #include "board.h"
-
-
+#include "ostream"
+#include "fstream"
+#include "string.h"
 using namespace std;
 
 class Node {
@@ -22,7 +23,7 @@ public:
     Node(Node* parent, Board* board,Move*move);
     Node(Node* parent, Board* board);
 
-    Node* expand(int depth);
+    Node* expand(int depth, ofstream& file);
     uint64_t count_leaf_nodes();
 };
 

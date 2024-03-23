@@ -157,6 +157,8 @@ void Board::push_move(Move m){
     square_piece_map[m.to] = p;
     square_piece_map[m.from] = nullptr;
     p->index = m.to;
+    p->square = IndexToSquare.at(m.to);
+    p->bitboard = 1ULL << m.to;
     active_color = !active_color;
 }
 
@@ -181,6 +183,7 @@ string Board::get_fen() const{
         }
 
     }
+    fen += (empty == 0) ? "" : to_string(empty);
     fen += " ";
     fen += this->active_color? "w" : "b";
     fen += " ";
@@ -216,6 +219,10 @@ void Board::show() const{
 
 
 vector<Move> Board::get_legal_moves(){
+    this->bitboards = Bitboards(this->pieces);
+    //print_bitboard(this->bitboards.occupancy_white);
+    //print_bitboard(this->bitboards.occupancy_black);
+
     vector<Move> moves = vector<Move>();
 
     King* king = (this->active_color) ? wk : bk;
@@ -337,6 +344,5 @@ Board::Board(const string& fen){
 
     this->parseFEN(fen);
     this->extractPieces(this->fen_boardPosition);
-    this->bitboards = Bitboards(this->pieces);
 
 };
