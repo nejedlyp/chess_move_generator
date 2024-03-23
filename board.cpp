@@ -154,6 +154,13 @@ Board Board::deep_copy() const{
 
 void Board::push_move(Move m){
     Piece* p = square_piece_map[m.from];
+    Piece* captured = square_piece_map[m.to];
+    if (captured != nullptr)
+    {
+        pieces.erase(std::remove(pieces.begin(), pieces.end(), captured), pieces.end());
+        pieces_black.erase(std::remove(pieces_black.begin(), pieces_black.end(), captured), pieces_black.end());
+        pieces_white.erase(std::remove(pieces_white.begin(), pieces_white.end(), captured), pieces_white.end());
+    }
     square_piece_map[m.to] = p;
     square_piece_map[m.from] = nullptr;
     p->index = m.to;

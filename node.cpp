@@ -18,8 +18,15 @@ Node::Node(Node *parent, Board *board,Move *move) {
 
 Node* Node::expand(int depth,ofstream& file) {
     if (depth == 0){
+        string uci_path="";
+        auto tmp = this;
+        while (tmp->parent != nullptr){
+            uci_path = tmp->move->get_uci() + "," + uci_path;
+            tmp = tmp->parent;
+        }
+
         //append to file fen position
-        file << this->board->get_fen() << endl;
+        file << this->board->get_fen() <<" ; "<< uci_path << endl;
         return this;
     }
     vector<Move> moves = this->board->get_legal_moves();

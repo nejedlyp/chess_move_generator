@@ -130,7 +130,6 @@ int main(int argc, const char * argv[]) {
     perft(3,fen_start);
     perft(4,fen_start);
 
-
     auto stop = 1;
     
 }
