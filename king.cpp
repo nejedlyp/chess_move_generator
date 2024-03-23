@@ -89,9 +89,9 @@ void King::find_pins(vector<Piece*> friends, vector<Piece*> opponents, Bitboards
         }
 
         //int from_square = bitboard2index(tmp)[0];
-        print_bitboard(tmp);
+        //print_bitboard(tmp);
         uint64_t to_squares = BITBOARD_RAY_MAP.at(make_pair(this->index,p->index)) & ~this->bitboard & ~tmp;
-        print_bitboard(to_squares);
+        //print_bitboard(to_squares);
         for (auto& k: friends){
             if (tmp == k->bitboard){
                 k->pin_attack_filter = to_squares;

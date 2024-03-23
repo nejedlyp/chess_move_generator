@@ -24,4 +24,8 @@ add_executable(engine main.cpp
         pawn.cpp
         pawn.hpp
         json.hpp
+        node.cpp
+        node.h
+        board.cpp
+        board.h
 )

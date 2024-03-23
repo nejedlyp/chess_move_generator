@@ -81,7 +81,7 @@ void Pawn::get_uci(Bitboards* bb, vector<Move>& moves){
     uint64_t oponents_occupancy_bitboard = this->color ? bb->occupancy_black:bb->occupancy_white;
     
     uint64_t captures_bitboard = this->get_attack_bitboard(bb->occupancy) & oponents_occupancy_bitboard & this->pin_attack_filter & this->check_attack_filter;
-    print_bitboard(captures_bitboard);
+    //print_bitboard(captures_bitboard);
     uint64_t push_bitboard = this->get_push_bitboard(bb->occupancy) & this->pin_attack_filter & this->check_attack_filter;
     
     for (const auto& k: bitboard2index(captures_bitboard)){
