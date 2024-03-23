@@ -28,6 +28,8 @@ public:
     string uci;
 
     Move(int from, int to);
+    Move(int from, int to, char promotion_piece);
+
     Move(string uci);
     string get_uci() const;
     

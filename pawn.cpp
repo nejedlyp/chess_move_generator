@@ -85,7 +85,17 @@ void Pawn::get_uci(Bitboards* bb, vector<Move>& moves){
     uint64_t push_bitboard = this->get_push_bitboard(bb->occupancy) & this->pin_attack_filter & this->check_attack_filter;
     
     for (const auto& k: bitboard2index(captures_bitboard)){
-        moves.push_back(Move(this->index, k));
+        if (k < 8 || k > 55)
+        {
+            moves.push_back(Move(this->index, k, 'Q'));
+            moves.push_back(Move(this->index, k, 'R'));
+            moves.push_back(Move(this->index, k, 'B'));
+            moves.push_back(Move(this->index, k, 'N'));
+        }
+        else
+        {
+            moves.push_back(Move(this->index, k));
+        }
     }
     for (const auto& k: bitboard2index(push_bitboard)){
         moves.push_back(Move(this->index, k));

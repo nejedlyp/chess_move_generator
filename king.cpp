@@ -53,11 +53,18 @@ void King::find_checks(vector<Piece*> friends, vector<Piece*> opponents, Bitboar
 }
 
 void King::get_uci(Bitboards* bb, vector<Move>& moves){
-    uint64_t friends_occupancy_bitboard = this->color ? bb->occupancy_no_wk:bb->occupancy_no_bk;
+    uint64_t friends_occupancy_bitboard = this->color ? bb->occupancy_white:bb->occupancy_black;
     uint64_t enemies_attacks_bitboard = this->color? bb->attack_black_no_wk:bb->attack_white_no_bk;
     
     uint64_t move_bitboard = this->get_attack_bitboard(0) & ~friends_occupancy_bitboard & ~enemies_attacks_bitboard;
-    
+
+//    print_bitboard(bb->occupancy_black);
+//    print_bitboard(bb->occupancy_white);
+//    print_bitboard(this->get_attack_bitboard(0));
+//    print_bitboard(~friends_occupancy_bitboard);
+//    print_bitboard(~enemies_attacks_bitboard);
+//    print_bitboard(move_bitboard);
+
     for (const auto& k: bitboard2index(move_bitboard)){
         moves.push_back(Move(this->index, k));
     }

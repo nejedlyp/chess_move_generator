@@ -20,7 +20,7 @@ void Board::verify_enpassant(vector<Move> &moves) {
     to_upper(this->fen_enPassantTarget);
     int square = SquareToIndex.at(this->fen_enPassantTarget);
 
-    if (this->fen_activeColor == "w") {
+    if (this->active_color) {
         uint64_t possible_squares = generatePseudolegalBlackPawnCapturesFromSquare(square);
         auto tmp = bitboard2index(possible_squares);
         for (auto& k: tmp){
@@ -44,7 +44,7 @@ void Board::verify_castling_K(vector<Move> &moves) {
     if (!this->castling_K){
         return;
     }
-    if (this->fen_activeColor != "w") {
+    if (!this->active_color) {
         return;
     }
     if (square_piece_map[SquareToIndex.at("F1")] != nullptr) {
@@ -69,7 +69,7 @@ void Board::verify_castling_Q(vector<Move> &moves) {
     if (!this->castling_Q){
         return;
     }
-    if (this->fen_activeColor != "w") {
+    if (!this->active_color) {
         return;
     }
     if (square_piece_map[SquareToIndex.at("D1")] != nullptr) {
@@ -98,7 +98,7 @@ void Board::verify_castling_k(vector<Move> &moves) {
     if (!this->castling_k){
         return;
     }
-    if (this->fen_activeColor != "b") {
+    if (this->active_color) {
         return;
     }
     if (square_piece_map[SquareToIndex.at("F8")] != nullptr) {
@@ -123,7 +123,7 @@ void Board::verify_castling_q(vector<Move> &moves) {
     if (!this->castling_q) {
         return;
     }
-    if (this->fen_activeColor != "b") {
+    if (this->active_color) {
         return;
     }
     if (square_piece_map[SquareToIndex.at("D8")] != nullptr) {
@@ -157,6 +157,7 @@ void Board::push_move(Move m){
     square_piece_map[m.to] = p;
     square_piece_map[m.from] = nullptr;
     p->index = m.to;
+    active_color = !active_color;
 }
 
 
@@ -181,7 +182,7 @@ string Board::get_fen() const{
 
     }
     fen += " ";
-    fen += this->fen_activeColor;
+    fen += this->active_color? "w" : "b";
     fen += " ";
     fen += this->fen_castlingAvailability;
     fen += " ";
@@ -217,9 +218,9 @@ void Board::show() const{
 vector<Move> Board::get_legal_moves(){
     vector<Move> moves = vector<Move>();
 
-    King* king = (this->fen_activeColor == "w") ? wk : bk;
-    std::vector<Piece*>* friends = (this->fen_activeColor == "w") ? &pieces_white : &pieces_black;
-    std::vector<Piece*>* opponents = (this->fen_activeColor == "w") ? &pieces_black : &pieces_white;
+    King* king = (this->active_color) ? wk : bk;
+    std::vector<Piece*>* friends = (this->active_color) ? &pieces_white : &pieces_black;
+    std::vector<Piece*>* opponents = (this->active_color) ? &pieces_black : &pieces_white;
 
     // finds check and sets check_attack_filter in Piece class
     king->find_checks(*friends, *opponents, &this->bitboards);

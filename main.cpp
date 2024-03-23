@@ -61,7 +61,25 @@ void test_fen(string fen, vector<string> correct){
     }
 }
 
+void perft(int depth){
+    //start time measurement
+    chrono::steady_clock::time_point begin = chrono::steady_clock::now();
 
+
+    Node* root;
+    root = new Node(nullptr, new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"));
+    root->expand(depth);
+    auto perft_x = root->count_leaf_nodes();
+
+
+    //end time measurement
+    chrono::steady_clock::time_point end = chrono::steady_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(end - begin).count();
+    //print result
+    cout<<"perft("<<depth<<") = "<<perft_x<<" Duration: "<<duration<<endl;
+
+    delete root;
+}
 
 
 
@@ -74,18 +92,15 @@ int main(int argc, const char * argv[]) {
         if (moves.size() == 0) {
             continue;
         }
+        //if (fen != "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8")
+        //    continue;
         test_fen(fen, moves);
     }
+    perft(1);
+    perft(2);
+    perft(3);
+    perft(4);
 
-
-    Node* root;
-    root = new Node(nullptr, new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"));
-    root->expand(1);
-    auto perft_1 = root->count_leaf_nodes();
-
-    root = new Node(nullptr, new Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"));
-    root->expand(2);
-    auto perft_2 = root->count_leaf_nodes();
 
     auto stop = 1;
     
