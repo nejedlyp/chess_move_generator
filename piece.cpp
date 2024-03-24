@@ -72,7 +72,7 @@ void Piece::get_uci(Bitboards* bb, vector<Move>& moves){
     uint64_t move_bitboard = this->get_attack_bitboard(bb->occupancy) & ~friends_occupancy_bitboard & this->pin_attack_filter & this->check_attack_filter;
     
     for (const auto& k: bitboard2index(move_bitboard)){
-        moves.push_back(Move(this->index, k));
+        moves.push_back(Move(this->type,this->index, k));
     }
 };
 

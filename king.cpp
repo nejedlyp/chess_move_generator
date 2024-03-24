@@ -66,7 +66,7 @@ void King::get_uci(Bitboards* bb, vector<Move>& moves){
 //    print_bitboard(move_bitboard);
 
     for (const auto& k: bitboard2index(move_bitboard)){
-        moves.push_back(Move(this->index, k));
+        moves.push_back(Move(this->type,this->index, k));
     }
 };
 

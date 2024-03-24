@@ -7,12 +7,14 @@
 
 #include "move.hpp"
 
-Move::Move(int from, int to){
+Move::Move(char piece,int from, int to){
+    this->piece = piece;
     this->from = from;
     this->to = to;
     this->uci = IndexToSquare.at(from)+IndexToSquare.at(to);
 }
-Move::Move(int from, int to, char promotion_piece){
+Move::Move(char piece,int from, int to, char promotion_piece){
+    this->piece = piece;
     this->from = from;
     this->to = to;
     this->promotion_piece = promotion_piece;
@@ -20,6 +22,7 @@ Move::Move(int from, int to, char promotion_piece){
 }
 
 Move::Move(std::string uci) {
+    this->piece = 0;
     this->uci = uci;
     this->from = SquareToIndex.at(uci.substr(0,2));
     this->to = SquareToIndex.at(uci.substr(2,2));

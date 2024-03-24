@@ -27,6 +27,37 @@
 #include <ostream>
 using namespace std;
 
+
+void test_move_post_fen_lg(string fen, string uci, string post_fen){
+    cout<<"----------------------------------------"<<endl;
+    cout<<"Test: "<<fen<<endl;
+    auto board = Board(fen);
+    auto moves = board.get_legal_moves();
+    bool success = false;
+    for (auto& m: moves){
+        if (m.get_uci() == uci){
+            success = true;
+            board.push_move(m);
+            break;
+        }
+    }
+    if (!success){
+        cout<<"Invalid move"<<endl;
+        return;
+    }
+    auto fen2 = board.get_fen();
+    cout<<"Out:  "<<fen2<<endl;
+    if (post_fen != fen2){
+        cout<<"Invalid"<<endl;
+        cout<<"Expected: "<<post_fen<<endl;
+        cout<<"Got:      "<<fen2<<endl;
+    }
+    else{
+        cout<<"OK"<<endl;
+    }
+
+}
+
 void test_get_fen(string fen){
     cout<<"----------------------------------------"<<endl;
     cout<<"Test: "<<fen<<endl;
@@ -104,14 +135,12 @@ void perft(int depth,const string& fen_positions){
 
 
 int main(int argc, const char * argv[]) {
-    auto b = Board("rnbqkbnr/pppppppp/8/8/8/3P4/PPP1PPPP/RNBQKBNR b KQkq - 0 1");
-    b.show();
-    b.push_move(Move("G7G5"));
-    b.show();
-    auto lg = b.get_legal_moves_uci();
-    for (auto& m: lg){
-        cout<<m<<endl;
-    }
+    test_move_post_fen_lg("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                          "E2E4",
+                      "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1");
+
+
+
     auto out = parseSimpleJson("/Users/petr/CLionProjects/engine/test.json");
 
     for (auto const& [fen, moves] : out){
@@ -125,10 +154,12 @@ int main(int argc, const char * argv[]) {
     }
     const string fen = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
     const string fen_start = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-    perft(1,fen_start);
-    perft(2,fen_start);
-    perft(3,fen_start);
-    perft(4,fen_start);
+    //perft(1,fen_start);
+    //perft(2,fen_start);
+    //perft(3,fen_start);
+    //perft(4,fen_start);
+    perft(5,fen_start);
+
 
     auto stop = 1;
     

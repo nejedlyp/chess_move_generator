@@ -17,6 +17,7 @@ class Move{
 public:
     int from;
     int to;
+    char piece;
     bool is_capture = false;
     bool is_promotion = false;
     char promotion_piece = 0;
@@ -27,8 +28,8 @@ public:
     bool is_check = false;
     string uci;
 
-    Move(int from, int to);
-    Move(int from, int to, char promotion_piece);
+    Move(char piece, int from, int to);
+    Move(char piece, int from, int to, char promotion_piece);
 
     Move(string uci);
     string get_uci() const;

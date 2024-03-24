@@ -87,18 +87,32 @@ void Pawn::get_uci(Bitboards* bb, vector<Move>& moves){
     for (const auto& k: bitboard2index(captures_bitboard)){
         if (k < 8 || k > 55)
         {
-            moves.push_back(Move(this->index, k, 'Q'));
-            moves.push_back(Move(this->index, k, 'R'));
-            moves.push_back(Move(this->index, k, 'B'));
-            moves.push_back(Move(this->index, k, 'N'));
+            moves.push_back(Move(this->type,this->index, k, 'Q'));
+            moves.push_back(Move(this->type,this->index, k, 'R'));
+            moves.push_back(Move(this->type,this->index, k, 'B'));
+            moves.push_back(Move(this->type,this->index, k, 'N'));
         }
         else
         {
-            moves.push_back(Move(this->index, k));
+            moves.push_back(Move(this->type,this->index, k));
         }
     }
     for (const auto& k: bitboard2index(push_bitboard)){
-        moves.push_back(Move(this->index, k));
+        if (k < 8 || k > 55)
+        {
+            moves.push_back(Move(this->type,this->index, k, 'Q'));
+            moves.push_back(Move(this->type,this->index, k, 'R'));
+            moves.push_back(Move(this->type,this->index, k, 'B'));
+            moves.push_back(Move(this->type,this->index, k, 'N'));
+        }
+        else
+        {
+            auto m = Move(this->type,this->index, k);
+            if (this->index - k == 16 || this->index - k == -16){
+                m.is_double_push = true;
+            }
+            moves.push_back(m);
+        }
     }
 
 }

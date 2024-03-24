@@ -25,7 +25,7 @@ void Board::verify_enpassant(vector<Move> &moves) {
         auto tmp = bitboard2index(possible_squares);
         for (auto& k: tmp){
             if (square_piece_map[k] != nullptr && square_piece_map[k]->type == 'P'){
-                moves.push_back(Move(k, square));
+                moves.push_back(Move('p',k, square));
             }
         }
 
@@ -34,7 +34,7 @@ void Board::verify_enpassant(vector<Move> &moves) {
         auto tmp = bitboard2index(possible_squares);
         for (auto& k: tmp){
             if (square_piece_map[k] != nullptr && square_piece_map[k]->type == 'p'){
-                moves.push_back(Move(k, square));
+                moves.push_back(Move('P',k, square));
             }
         }
     }
@@ -160,7 +160,33 @@ void Board::push_move(Move m){
         pieces.erase(std::remove(pieces.begin(), pieces.end(), captured), pieces.end());
         pieces_black.erase(std::remove(pieces_black.begin(), pieces_black.end(), captured), pieces_black.end());
         pieces_white.erase(std::remove(pieces_white.begin(), pieces_white.end(), captured), pieces_white.end());
+        //TODO //delete captured;
     }
+
+    if (m.is_double_push){
+        if (active_color){
+            enPassant_square = IndexToSquare.at(m.to - 8);
+        }
+        else{
+            enPassant_square = IndexToSquare.at(m.to + 8);
+        }
+    }
+    else{
+        enPassant_square = "-";
+    }
+
+//    if (m.is_en_passant){
+//        if (active_color){
+//            captured = square_piece_map[m.to - 8];
+//        }
+//        else{
+//            captured = square_piece_map[m.to + 8];
+//        }
+//        pieces.erase(std::remove(pieces.begin(), pieces.end(), captured), pieces.end());
+//        pieces_black.erase(std::remove(pieces_black.begin(), pieces_black.end(), captured), pieces_black.end());
+//        pieces_white.erase(std::remove(pieces_white.begin(), pieces_white.end(), captured), pieces_white.end());
+//        //TODO //delete captured;
+//    }
     square_piece_map[m.to] = p;
     square_piece_map[m.from] = nullptr;
     p->index = m.to;
@@ -196,7 +222,7 @@ string Board::get_fen() const{
     fen += " ";
     fen += this->fen_castlingAvailability;
     fen += " ";
-    fen += this->fen_enPassantTarget;
+    fen += this->enPassant_square;
     fen += " ";
     fen += to_string(this->halfMoveClock);
     fen += " ";
