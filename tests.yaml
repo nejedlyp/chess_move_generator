@@ -1,0 +1,14 @@
+test_001:
+  fen_1: ""
+  fen_1_legal: ""
+  move: ""
+  fen_2: ""
+  fen_2_legal: ""
+
+test_002:
+  fen_1: ""
+  fen_1_legal: ""
+  move: ""
+  fen_2: ""
+  fen_2_legal: ""
+

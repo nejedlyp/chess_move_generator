@@ -25,6 +25,8 @@
 #include <fstream>
 #include <chrono>
 #include <ostream>
+#include <yaml-cpp/yaml.h>
+
 using namespace std;
 
 
@@ -133,15 +135,53 @@ void perft(int depth,const string& fen_positions){
 
 
 
+class Test {
+public:
+    std::string name;
+    std::string fen_1;
+    std::string fen_1_legal;
+    std::string move;
+    std::string fen_2;
+    std::string fen_2_legal;
+
+    void loadFromYAML(const std::string& _name,const YAML::Node& node) {
+        name = _name;
+        fen_1 = node["fen_1"].as<std::string>();
+        fen_1_legal = node["fen_1_legal"].as<std::string>();
+        move = node["move"].as<std::string>();
+        fen_2 = node["fen_2"].as<std::string>();
+        fen_2_legal = node["fen_2_legal"].as<std::string>();
+    }
+};
+
+
+std::vector<Test> loadTestsFromYAML(const std::string& filename) {
+    YAML::Node yamlFile = YAML::LoadFile(filename);
+    std::vector<Test> tests;
+
+    for (const auto& testCase : yamlFile) {
+        Test test;
+        test.loadFromYAML(testCase.first.Scalar(),testCase.second); // testCase.first is the key (e.g., "test_001")
+        tests.push_back(test);
+    }
+
+    return tests;
+}
+
 
 int main(int argc, const char * argv[]) {
+
+    std::string filename = "/home/petr/CLionProjects/chess_move_generator/tests.yaml"; // Update with your YAML file name
+    auto tests = loadTestsFromYAML(filename);
+
+
     test_move_post_fen_lg("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
                           "E2E4",
                       "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1");
 
 
 
-    auto out = parseSimpleJson("/Users/petr/CLionProjects/engine/test.json");
+    auto out = parseSimpleJson("test.json");
 
     for (auto const& [fen, moves] : out){
         if (moves.size() == 0) {
